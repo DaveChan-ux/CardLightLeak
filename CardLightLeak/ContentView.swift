@@ -226,7 +226,7 @@ struct ContentView: View {
 
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .overlay(
-                    CardContent()
+                    CardContentWithLight()
                 )
                 .frame(width: width, height: height)
                 .rotation3DEffect(.degrees(dragOffset.x), axis: (x: 0, y: 1, z: 0))
@@ -241,6 +241,46 @@ struct ContentView: View {
     }
 }
 
+struct CardContentWithLight: View {
+    @State private var trimEnd: CGFloat = 0
+    let width: CGFloat = 265
+    let height: CGFloat = 471
+
+    var body: some View {
+        ZStack {
+            CardContent()
+
+            // The base card outline
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(
+                    Color.yellow.opacity(0.1),
+                    lineWidth: 2
+                )
+                .frame(width: width, height: height)
+                .blur(radius: 0)
+                .blendMode(.plusLighter)
+
+            // The animated light segment
+            RoundedRectangle(cornerRadius: 24)
+                .trim(from: trimEnd - 0.10, to: trimEnd)
+                .stroke(
+                    Color.yellow,
+                    lineWidth: 1
+                )
+                .frame(width: width, height: height)
+                .blur(radius: 1)
+                .blendMode(.plusLighter)
+        }
+        .onAppear {
+            withAnimation(
+                .linear(duration: 3)
+                .repeatForever(autoreverses: false)
+            ) {
+                trimEnd = 1.0
+            }
+        }
+    }
+}
 
 class Particles2: SKScene {
     override func sceneDidLoad() {
