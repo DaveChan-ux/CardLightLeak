@@ -10,6 +10,10 @@ import SpriteKit
 import CoreMotion
 
 struct ContentView: View {
+    @State private var impactGenerator = UIImpactFeedbackGenerator(style: .heavy) //Feedback style
+    @State private var lastFeedbackTime = Date()
+//    @State private var feedbackThrottle: TimeInterval = 0.1 // Minimum time between haptics
+
     @State private var layerCount = 60.0
     @State private var blurMax = 0.0
     @State private var blurFactor = 10.0
@@ -199,6 +203,11 @@ struct ContentView: View {
                     DragGesture(minimumDistance: 0.0)
                         .onChanged { gesture in
                             withAnimation(.interactiveSpring()) {
+                                // If this is the start of the drag (isDragging was false)
+                                if !isDragging {
+                                    impactGenerator.impactOccurred(intensity: 0.7)
+                                }
+
                                 normalizedX = scale(inputMin: 0, inputMax: width, outputMin: -intensity, outputMax: intensity, value: gesture.location.x)
                                 normalizedY = scale(inputMin: 0, inputMax: height, outputMin: intensity, outputMax: -intensity, value: gesture.location.y)
                                 isDragging = true
@@ -207,21 +216,19 @@ struct ContentView: View {
                                 blurMax = blurMaxScale(abs(normalizedY))
                                 dragOffset = CGPoint(x: normalizedX, y: normalizedY)
                             }
-
                         }
                         .onEnded { _ in
                             withAnimation(.spring()) {
-//                                normalizedY = 0.0
-//                                normalizedX = 0.0
                                 isDragging = false
                                 dragOffset = .zero
                                 yOffsetMax = 0.0
                                 blurMax = 0.0
                                 xOffsetMax = 0.0
+
+                                // Release haptic
+                                impactGenerator.impactOccurred(intensity: 0.5)
                             }
-
                         }
-
                 )
 
             RoundedRectangle(cornerRadius: 24, style: .continuous)
